@@ -25,7 +25,7 @@ class InventorySystem {
         document.getElementById('inventoryBtn').addEventListener('click', () => this.showSection('inventory'));
         document.getElementById('reportsBtn').addEventListener('click', () => this.showSection('reports'));
         
-        // Form events
+        // Form events - CORREGIDO
         document.getElementById('productForm').addEventListener('submit', (e) => this.addProduct(e));
         document.getElementById('clearForm').addEventListener('click', () => this.clearForm());
         
@@ -95,9 +95,25 @@ class InventorySystem {
     
     addProduct(e) {
         e.preventDefault();
+        console.log('Formulario enviado - Agregar producto'); // Debug
         
         const idh = document.getElementById('idhInput').value;
         const batch = document.getElementById('batchInput').value;
+        const description = document.getElementById('descriptionInput').value;
+        const quantity = document.getElementById('quantityInput').value;
+        const expiryDate = document.getElementById('expiryInput').value;
+        const location = document.getElementById('locationInput').value;
+        
+        // Validaciones básicas
+        if (!idh || !batch || !description || !quantity || !expiryDate || !location) {
+            this.showNotification('Por favor completa todos los campos obligatorios', 'error');
+            return;
+        }
+        
+        if (isNaN(quantity) || parseFloat(quantity) <= 0) {
+            this.showNotification('La cantidad debe ser un número mayor a 0', 'error');
+            return;
+        }
         
         // Validar que no exista producto con mismo IDH y mismo lote
         const existingProduct = this.products.find(p => p.idh === idh && p.batch === batch);
@@ -106,22 +122,21 @@ class InventorySystem {
             return;
         }
         
-        let location = document.getElementById('locationInput').value;
         let specificLocation = '';
         
         if (location === 'Primer Piso') {
-            specificLocation = document.getElementById('specificLocationInput').value;
+            specificLocation = document.getElementById('specificLocationInput').value || '';
         } else if (location === 'Producción') {
-            specificLocation = document.getElementById('extruderInput').value;
+            specificLocation = document.getElementById('extruderInput').value || '';
         }
         
         const product = {
             id: Date.now(),
             idh: idh,
-            description: document.getElementById('descriptionInput').value,
+            description: description,
             batch: batch,
-            quantity: parseFloat(document.getElementById('quantityInput').value),
-            expiryDate: document.getElementById('expiryInput').value,
+            quantity: parseFloat(quantity),
+            expiryDate: expiryDate,
             location: location,
             specificLocation: specificLocation,
             notes: document.getElementById('notesInput').value,
@@ -130,6 +145,8 @@ class InventorySystem {
             status: 'vigente',
             lastModified: new Date().toISOString()
         };
+        
+        console.log('Producto a agregar:', product); // Debug
         
         this.products.push(product);
         this.saveData();
