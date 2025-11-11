@@ -1,194 +1,562 @@
-<!-- Sección Dashboard Mejorada -->
-<section id="dashboardSection" class="hidden">
-    <div class="mb-8">
-        <h2 class="serif-font text-4xl font-bold gradient-text mb-2">Panel de Control</h2>
-        <p class="text-gray-600 text-lg">Visión general de tu inventario y trazabilidad</p>
-    </div>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InventariPro - Sistema de Gestión</title>
     
-    <!-- Stats Cards Actualizadas -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div class="glass-effect rounded-xl p-6 hover-lift">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-gray-600 text-sm font-medium">Total Productos</p>
-                    <p id="totalProducts" class="text-3xl font-bold text-gray-800">0</p>
-                </div>
-                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Core Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-blue: #1e3a8a;
+            --warm-beige: #f5f1eb;
+            --accent-gold: #d97706;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .hover-lift {
+            transition: all 0.3s ease;
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, var(--primary-blue), var(--accent-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .table-row {
+            transition: all 0.2s ease;
+        }
+        
+        .table-row:hover {
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+        
+        .alert-badge {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        /* Estilos para los gráficos */
+        .chart-container {
+            width: 100%;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Header -->
+    <nav class="glass-effect sticky top-0 z-50 px-6 py-4 shadow-sm">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                     </svg>
                 </div>
+                <h1 class="text-2xl font-bold text-gray-800">InventariPro</h1>
             </div>
-        </div>
-        
-        <div class="glass-effect rounded-xl p-6 hover-lift">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-gray-600 text-sm font-medium">Próximos a Vencer</p>
-                    <p id="expiringSoon" class="text-3xl font-bold text-orange-600">0</p>
-                </div>
-                <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-            </div>
-        </div>
-        
-        <div class="glass-effect rounded-xl p-6 hover-lift">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-gray-600 text-sm font-medium">Stock Bajo</p>
-                    <p id="lowStock" class="text-3xl font-bold text-red-600">0</p>
-                </div>
-                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                    </svg>
+            
+            <div class="flex items-center space-x-4">
+                <button id="dashboardBtn" class="px-4 py-2 text-gray-600 hover:text-blue-600 transition-colors font-medium rounded-lg">Dashboard</button>
+                <button id="inventoryBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">Inventario</button>
+                <button id="reportsBtn" class="px-4 py-2 text-gray-600 hover:text-blue-600 transition-colors font-medium rounded-lg">Reportes</button>
+                <div class="relative">
+                    <button class="px-4 py-2 text-gray-600 hover:text-blue-600 transition-colors font-medium rounded-lg">
+                        Alertas
+                        <span id="alertCount" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center alert-badge hidden">0</span>
+                    </button>
                 </div>
             </div>
         </div>
-        
-        <div class="glass-effect rounded-xl p-6 hover-lift">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-gray-600 text-sm font-medium">Consumos del Mes</p>
-                    <p id="monthlyConsumption" class="text-3xl font-bold text-green-600">0 kg</p>
-                </div>
-                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                    </svg>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Nueva Sección: Artículos por Estado -->
-    <div class="glass-effect rounded-xl p-6 mb-6">
-        <h3 class="serif-font text-xl font-semibold mb-4 text-gray-800">Artículos por Nombre y Estado</h3>
-        <div id="articlesByStatus" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <!-- Los artículos se cargarán dinámicamente aquí -->
-        </div>
-    </div>
-    
-    <!-- Charts Section Mejorada -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="glass-effect rounded-xl p-6">
-            <h3 class="serif-font text-xl font-semibold mb-4 text-gray-800">Distribución por Ubicación</h3>
-            <div id="locationChart" style="height: 300px;"></div>
-        </div>
-        
-        <div class="glass-effect rounded-xl p-6">
-            <h3 class="serif-font text-xl font-semibold mb-4 text-gray-800">Tendencias de Consumo</h3>
-            <div id="consumptionTrendChart" style="height: 300px;"></div>
-        </div>
-    </div>
-</section>
+    </nav>
 
-<!-- En el formulario de ubicaciones, actualizado: -->
-<div>
-    <label class="block text-sm font-medium text-gray-700 mb-2">Ubicación</label>
-    <div class="flex gap-2">
-        <select id="locationInput" class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" required>
-            <option value="">Seleccionar ubicación</option>
-            <option value="Primer Piso">Primer Piso</option>
-            <option value="Fundición">Fundición</option>
-            <option value="Almacén Externo">Almacén Externo</option>
-            <option value="Producción">Producción</option>
-            <option value="Calidad">Calidad</option>
-            <option value="custom">Otra ubicación...</option>
-        </select>
-        <input type="text" id="customLocationInput" class="hidden flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" placeholder="Especificar ubicación">
-    </div>
-    <!-- Campo adicional para ubicación específica en Primer Piso -->
-    <div id="specificLocationContainer" class="mt-2 hidden">
-        <input type="text" id="specificLocationInput" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" placeholder="Ej: Estantería A, Nivel 3, Posición 5">
-    </div>
-    <!-- Campo adicional para extrusor en Producción -->
-    <div id="extruderContainer" class="mt-2 hidden">
-        <select id="extruderInput" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
-            <option value="">Seleccionar extrusor</option>
-            <option value="Extrusor 1">Extrusor 1</option>
-            <option value="Extrusor 2">Extrusor 2</option>
-            <option value="Extrusor 3">Extrusor 3</option>
-            <option value="Extrusor 4">Extrusor 4</option>
-            <option value="Extrusor 5">Extrusor 5</option>
-            <option value="Extrusor 6">Extrusor 6</option>
-            <option value="Extrusor 7">Extrusor 7</option>
-            <option value="Extrusor 8">Extrusor 8</option>
-            <option value="Extrusor 9">Extrusor 9</option>
-            <option value="Extrusor 10">Extrusor 10</option>
-            <option value="Extrusor 11">Extrusor 11</option>
-            <option value="Extrusor 12">Extrusor 12</option>
-        </select>
-    </div>
-</div>
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-6">
+        <!-- Dashboard Section -->
+        <section id="dashboardSection" class="hidden">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold gradient-text mb-2">Panel de Control</h2>
+                <p class="text-gray-600">Visión general de tu inventario y trazabilidad</p>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="glass-effect rounded-xl p-6 hover-lift">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm font-medium">Total Productos</p>
+                            <p id="totalProducts" class="text-2xl font-bold text-gray-800">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="glass-effect rounded-xl p-6 hover-lift">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm font-medium">Próximos a Vencer</p>
+                            <p id="expiringSoon" class="text-2xl font-bold text-orange-600">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="glass-effect rounded-xl p-6 hover-lift">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm font-medium">Stock Bajo</p>
+                            <p id="lowStock" class="text-2xl font-bold text-red-600">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="glass-effect rounded-xl p-6 hover-lift">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm font-medium">Consumos del Mes</p>
+                            <p id="monthlyConsumption" class="text-2xl font-bold text-green-600">0 kg</p>
+                        </div>
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Artículos por Estado -->
+            <div class="glass-effect rounded-xl p-6 mb-6">
+                <h3 class="text-xl font-semibold mb-4 text-gray-800">Artículos por Nombre y Estado</h3>
+                <div id="articlesByStatus" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Los artículos se cargarán aquí -->
+                </div>
+            </div>
+            
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="glass-effect rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Distribución por Ubicación</h3>
+                    <div id="locationChart" class="chart-container"></div>
+                </div>
+                
+                <div class="glass-effect rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Tendencias de Consumo</h3>
+                    <div id="consumptionTrendChart" class="chart-container"></div>
+                </div>
+            </div>
+        </section>
 
-<!-- Sección de Ajuste de Stock Mejorada -->
-<div class="glass-effect rounded-xl p-6 mb-8 hover-lift">
-    <h3 class="serif-font text-2xl font-semibold mb-6 text-gray-800">Movimientos y Consumos</h3>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">IDH del Producto</label>
-            <input type="text" id="adjustIdh" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" placeholder="IDH">
+        <!-- Inventory Management Section -->
+        <section id="inventorySection">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold gradient-text mb-2">Gestión de Inventario</h2>
+                <p class="text-gray-600">Administra tus productos y controla tu stock</p>
+            </div>
+            
+            <!-- Add Product Form -->
+            <div class="glass-effect rounded-xl p-6 mb-6 hover-lift">
+                <h3 class="text-xl font-semibold mb-4 text-gray-800">Agregar Nuevo Producto</h3>
+                
+                <form id="productForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">IDH *</label>
+                            <input type="text" id="idhInput" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="IDH del producto" required>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Descripción *</label>
+                            <input type="text" id="descriptionInput" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Nombre del producto" required>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Lote *</label>
+                            <input type="text" id="batchInput" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Número de lote" required>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Cantidad (kg) *</label>
+                            <input type="number" id="quantityInput" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="0.00" required>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Caducidad *</label>
+                            <input type="date" id="expiryInput" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Ubicación *</label>
+                            <select id="locationInput" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                <option value="">Seleccionar ubicación</option>
+                                <option value="Primer Piso">Primer Piso</option>
+                                <option value="Fundición">Fundición</option>
+                                <option value="Almacén Externo">Almacén Externo</option>
+                                <option value="Producción">Producción</option>
+                                <option value="Calidad">Calidad</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Ubicación específica para Primer Piso -->
+                    <div id="specificLocationContainer" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Ubicación Específica (Primer Piso)</label>
+                        <input type="text" id="specificLocationInput" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Ej: Estantería A, Nivel 3, Posición 5">
+                    </div>
+
+                    <!-- Extrusor para Producción -->
+                    <div id="extruderContainer" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Extrusor (Producción)</label>
+                        <select id="extruderInput" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Seleccionar extrusor</option>
+                            <option value="Extrusor 1">Extrusor 1</option>
+                            <option value="Extrusor 2">Extrusor 2</option>
+                            <option value="Extrusor 3">Extrusor 3</option>
+                            <option value="Extrusor 4">Extrusor 4</option>
+                            <option value="Extrusor 5">Extrusor 5</option>
+                            <option value="Extrusor 6">Extrusor 6</option>
+                            <option value="Extrusor 7">Extrusor 7</option>
+                            <option value="Extrusor 8">Extrusor 8</option>
+                            <option value="Extrusor 9">Extrusor 9</option>
+                            <option value="Extrusor 10">Extrusor 10</option>
+                            <option value="Extrusor 11">Extrusor 11</option>
+                            <option value="Extrusor 12">Extrusor 12</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Notas</label>
+                            <textarea id="notesInput" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Notas adicionales..."></textarea>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Estado de Calidad *</label>
+                            <select id="qualityStatusInput" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                <option value="aprobado">Aprobado</option>
+                                <option value="bloqueado">Bloqueado - No pasa calidad</option>
+                                <option value="cuarentena">En Cuarentena</option>
+                                <option value="rechazado">Rechazado</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" id="clearForm" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                            Limpiar
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            Agregar Producto
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Stock Movement Section -->
+            <div class="glass-effect rounded-xl p-6 mb-6 hover-lift">
+                <h3 class="text-xl font-semibold mb-4 text-gray-800">Movimientos y Consumos</h3>
+                
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">IDH del Producto *</label>
+                            <input type="text" id="adjustIdh" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="IDH" required>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Lote *</label>
+                            <input type="text" id="adjustBatch" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Lote" required>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Cantidad (kg) *</label>
+                            <input type="number" id="adjustQuantity" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="0.00" required>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Origen *</label>
+                            <select id="originLocation" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                <option value="">Seleccionar origen</option>
+                                <option value="Primer Piso">Primer Piso</option>
+                                <option value="Fundición">Fundición</option>
+                                <option value="Almacén Externo">Almacén Externo</option>
+                                <option value="Producción">Producción</option>
+                                <option value="Calidad">Calidad</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Destino *</label>
+                            <select id="destinationLocation" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                                <option value="">Seleccionar destino</option>
+                                <option value="Primer Piso">Primer Piso</option>
+                                <option value="Fundición">Fundición</option>
+                                <option value="Almacén Externo">Almacén Externo</option>
+                                <option value="Producción">Producción</option>
+                                <option value="Calidad">Calidad</option>
+                                <option value="Consumido">Consumido</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Responsable *</label>
+                        <input type="text" id="movementResponsible" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Nombre del responsable" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Motivo</label>
+                        <textarea id="movementReason" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Ej: Consumo para producción, Transferencia..."></textarea>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3">
+                        <button id="transferStock" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            Transferir Stock
+                        </button>
+                        <button id="consumeStock" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                            Registrar Consumo
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filter -->
+            <div class="glass-effect rounded-xl p-6 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Buscar</label>
+                        <input type="text" id="searchInput" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Buscar producto...">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Ubicación</label>
+                        <select id="filterLocation" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Todas las ubicaciones</option>
+                            <option value="Primer Piso">Primer Piso</option>
+                            <option value="Fundición">Fundición</option>
+                            <option value="Almacén Externo">Almacén Externo</option>
+                            <option value="Producción">Producción</option>
+                            <option value="Calidad">Calidad</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+                        <select id="filterStatus" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Todos los estados</option>
+                            <option value="vigente">Vigente</option>
+                            <option value="proximo">Próximo a vencer</option>
+                            <option value="vencido">Vencido</option>
+                            <option value="stock-bajo">Stock bajo</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex items-end space-x-2">
+                        <button id="clearFilters" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                            Limpiar
+                        </button>
+                        <button id="exportData" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            Exportar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Table -->
+            <div class="glass-effect rounded-xl overflow-hidden mb-6">
+                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="text-xl font-semibold text-gray-800">Lista de Productos</h3>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-sm text-gray-600">
+                            <span class="font-medium">Total: </span>
+                            <span id="totalInventoryQuantity" class="font-bold text-blue-600">0 kg</span>
+                        </div>
+                        <button id="downloadFullInventory" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                            Descargar Inventario
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">IDH</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descripción</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lote</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cantidad</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Caducidad</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ubicación</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Calidad</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Product rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Movement History -->
+            <div class="glass-effect rounded-xl p-6 hover-lift">
+                <h3 class="text-xl font-semibold mb-4 text-gray-800">Registro de Movimientos</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Filtrar por Fecha</label>
+                        <input type="date" id="movementDateFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Filtrar por Producto</label>
+                        <select id="movementProductFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Todos los productos</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex items-end">
+                        <button id="clearMovementFilters" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                            Limpiar Filtros
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha/Hora</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Producto</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lote</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cantidad</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ubicación</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Responsable</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Motivo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="movementTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Movement records will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reports Section -->
+        <section id="reportsSection" class="hidden">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold gradient-text mb-2">Reportes y Análisis</h2>
+                <p class="text-gray-600">Análisis detallado de tu inventario</p>
+            </div>
+            
+            <!-- Report Charts -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="glass-effect rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Rotación de Inventario</h3>
+                    <div id="rotationChart" class="chart-container"></div>
+                </div>
+                
+                <div class="glass-effect rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Alertas por Vencimiento</h3>
+                    <div id="expiryChart" class="chart-container"></div>
+                </div>
+            </div>
+            
+            <!-- Detailed Reports -->
+            <div class="glass-effect rounded-xl p-6">
+                <h3 class="text-xl font-semibold mb-6 text-gray-800">Reportes Generados</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                            <h4 class="font-semibold text-gray-800">Reporte de Inventario General</h4>
+                            <p class="text-gray-600 text-sm">Inventario completo con todas las ubicaciones</p>
+                        </div>
+                        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            Descargar PDF
+                        </button>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                            <h4 class="font-semibold text-gray-800">Productos Próximos a Vencer</h4>
+                            <p class="text-gray-600 text-sm">Listado de productos con fecha de caducidad cercana</p>
+                        </div>
+                        <button class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
+                            Descargar Excel
+                        </button>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                            <h4 class="font-semibold text-gray-800">Movimientos de Stock</h4>
+                            <p class="text-gray-600 text-sm">Historial de entradas y salidas del inventario</p>
+                        </div>
+                        <button class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                            Descargar CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <p class="text-gray-400">&copy; 2024 InventariPro. Sistema profesional de gestión de inventario.</p>
         </div>
-        
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Lote</label>
-            <input type="text" id="adjustBatch" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" placeholder="Lote">
-        </div>
-    </div>
-    
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Cantidad (kg)</label>
-            <input type="number" id="adjustQuantity" step="0.01" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" placeholder="0.00">
-        </div>
-        
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Origen</label>
-            <select id="originLocation" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" required>
-                <option value="">Seleccionar origen</option>
-                <option value="Primer Piso">Primer Piso</option>
-                <option value="Fundición">Fundición</option>
-                <option value="Almacén Externo">Almacén Externo</option>
-                <option value="Producción">Producción</option>
-                <option value="Calidad">Calidad</option>
-            </select>
-        </div>
-        
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Destino</label>
-            <select id="destinationLocation" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" required>
-                <option value="">Seleccionar destino</option>
-                <option value="Primer Piso">Primer Piso</option>
-                <option value="Fundición">Fundición</option>
-                <option value="Almacén Externo">Almacén Externo</option>
-                <option value="Producción">Producción</option>
-                <option value="Calidad">Calidad</option>
-                <option value="Consumido">Consumido</option>
-            </select>
-        </div>
-    </div>
-    
-    <div class="mb-6">
-        <label class="block text-sm font-medium text-gray-700 mb-2">Responsable del Movimiento</label>
-        <input type="text" id="movementResponsible" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" placeholder="Nombre del responsable" required>
-    </div>
-    
-    <div class="mb-6">
-        <label class="block text-sm font-medium text-gray-700 mb-2">Motivo del Movimiento</label>
-        <textarea id="movementReason" rows="2" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" placeholder="Ej: Consumo para producción, Transferencia entre ubicaciones..."></textarea>
-    </div>
-    
-    <div class="flex justify-end space-x-4">
-        <button id="transferStock" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-            Transferir Stock
-        </button>
-        <button id="consumeStock" class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
-            Registrar Consumo
-        </button>
-    </div>
-</div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="main.js"></script>
+</body>
+</html>
